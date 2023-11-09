@@ -50,7 +50,7 @@ def create_patient_record():
     with open(file_name, 'w') as file:
         file.write(patient_json)
 
-    print(f"Patient record for {name} has been created and stored in {file_name}")
+    print(f"Patient record for {name} has been created and stored in {file_name}, their user id is {patient_id}")
 
 
 if __name__ == "__main__":
