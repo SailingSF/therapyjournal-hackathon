@@ -24,7 +24,7 @@ def save_patients_file(patients):
         file.write(patient_json)
 
 
-def update_thread(user_id: int, thread_id: str):
+def update_threadid(user_id: int, thread_id: str):
     '''
     Updates patients.json for the given user id with the thread id for that user
     '''
@@ -32,7 +32,7 @@ def update_thread(user_id: int, thread_id: str):
 
     for user in patients:
         if user['patient_id'] == user_id:
-            user['data']['openai_assistant']['thread_id'] = thread_id
+            user['data']['openai_assistant'] = {'thread_id': thread_id}
     
     save_patients_file(patients)
 

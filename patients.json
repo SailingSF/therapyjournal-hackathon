@@ -8,6 +8,9 @@
             "journal_entries": [],
             "contextual_information": {
                 "therapy_goals": "Do good"
+            },
+            "openai_assistant": {
+                "thread_id": "thread_mVHvrXaLjuw0iha3WPAeoFM5"
             }
         }
     },

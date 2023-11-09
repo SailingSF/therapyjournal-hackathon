@@ -1,0 +1,4 @@
+{
+    "journal_assistant_instructions": "Please prompt the user to write a journal entry the user as {name}. The user's current therapy goal is '{goal}.' The user has a premium account. Response should be short",
+    "journal_assistant_id": "asst_5wkCFkKyOXy3I27eUJsfNTGb"
+}
