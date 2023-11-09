@@ -37,3 +37,17 @@ def update_threadid(user_id: int, thread_id: str):
     save_patients_file(patients)
 
     return
+
+def update_goal(user_id: int, goal: str):
+    '''
+    Updates the user's goal in the patients.json file
+    '''
+    patients = get_patients_file()
+
+    for user in patients:
+        if user['patient_id'] == user_id:
+            user['data']['contextual_information']['therapy_goals'] = goal
+    
+    save_patients_file(patients)
+
+    return

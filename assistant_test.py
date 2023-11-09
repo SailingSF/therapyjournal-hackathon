@@ -101,32 +101,85 @@ def request_journal_entry(user_id: int):
     assistant_id=journal_assistant_id,
     instructions=specific_instructions
     )
-    if run.status != 'completed':
+    while run.status != 'completed':
         print(run)
+        run = client.beta.threads.runs.retrieve(thread_id=thread.id,run_id=run.id)
         time.sleep(2)
-    else:
-        pass
+
 
     # print message to prompt journal entry
     messages = client.beta.threads.messages.list(thread_id=thread.id)
     assistant_prompt_text = messages.data[0].content[0].text.value
     print(assistant_prompt_text)
 
+    journal_entry = input("Input: ")
 
-    # respond to journal entry
-        # confirm chat is journal entry?
-        
-    # end
+    # add journal to thread
+    message = client.beta.threads.messages.create(
+        thread_id=thread.id,
+        role="user",
+        content=journal_entry
+    )
 
-def analyze_entry():
+    return journal_entry
+
+def analyze_entry(journal_entry, user_id):
     '''
     Looks at most recent journal entry from patient
     Creates summary with analysis for therapist
     Uses completion API (for now) to get analysis of single entry
     Shares analysis with therapist
     '''
+    # get openai assistant params specific to the therapist assistant
+    assistant_id = get_json_file(configfile_name)['therapist_assistant_id']
+    thread_id = get_json_file(configfile_name)['therapist_thread_id']
 
-def update_goal():
+    # get information about relevant user
+    user = get_user_data(user_id)
+    current_goal = user['data']['contextual_information']['therapy_goals']
+    name = user['data']['name']
+
+    # add message to analyze the given journal entry
+    message = client.beta.threads.messages.create(
+        thread_id=thread_id,
+        role="user",
+        content=f"Analyze the following journal entry written by a patient: {journal_entry}"
+    )
+
+    # get the instructions for the therapy assistant
+    general_instructions = get_json_file(configfile_name)['therapist_assistant_instructions']
+
+    # run therapy assistant with new message
+    run = client.beta.threads.runs.create(
+    thread_id=thread_id,
+    assistant_id=assistant_id,
+    instructions=general_instructions
+    )
+
+    # wait for run to complete
+    while run.status != 'completed':
+        print(run)
+        run = client.beta.threads.runs.retrieve(thread_id=thread_id,run_id=run.id)
+        time.sleep(2)
+
+
+    # get messages to print out response for therapist
+    messages = client.beta.threads.messages.list(thread_id=thread_id)
+    assistant_prompt_text = messages.data[0].content[0].text.value
+    print(assistant_prompt_text)
+
+    # create new therapy goal if needed
+    make_new_goal = input(f"Would you like to update {name}'s therapy goal? Their current goal is {current_goal}? Y/n  ")
+    if make_new_goal.upper() == 'Y':
+        new_therapy_goal = input("New therapy goal:  ")
+        pu.update_goal(user_id, new_therapy_goal)
+
+    else:
+        print(f"Keeping current goal of {current_goal}")
+
+    return
+
+def update_goal(goal):
     '''
     Ask therapist if goal should be updated
     Suggests new goal first, asks if ok
@@ -134,17 +187,19 @@ def update_goal():
     '''
 
 
-
 def main():
     user_id = int(input("What is the User ID? "))
     # start new or find thread
 
     # generate reminder prompt from thread
-    request_journal_entry(user_id)
+    journal_entry = request_journal_entry(user_id)
     # store response
 
     # analyze resonpse
+        # create assistant to summarize the journal entry and output a response for the therapist to analyze.
+    analyze_entry(journal_entry, user_id)
 
+    # Suggest and ask therapist to update context
     # update context
 
     return
