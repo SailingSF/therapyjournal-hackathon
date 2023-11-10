@@ -1,6 +1,6 @@
-# OpenAI EMERGENCY Hackathon 🚨🚨🚨
+# Therapy Journal AI Assistant
 
-# Therapy Journal Assistant
+## OpenAI EMERGENCY Hackathon 🚨🚨🚨
 
 ## Idea
 
@@ -35,4 +35,7 @@ The config.json file has the relevant Assistant and thread IDs for this program 
 
 ## Future work
 
-...
+With the release of GPTs this morning (11/9/23) a lot of this behaviour can be replicated and utilize the chatGPT interface. I built this by experimenting for an hour and hope to improve it and include the multiple roles features of patients and a therapist. <https://chat.openai.com/g/g-dPWBwvrUV-reflection-companion>
+
+A frontend will be important to make this more useful as well as a more secure way to handle data than local json files.
+An interface for therapists to analyze all of a patient's journal entries would be great too. Storing the posts both in a traditional database as well as a vector database so that RAG could be done by the AI assistant for the therapist would be a great way to summarize and notice trends through time as well as identify recurring themes.
