@@ -6,16 +6,15 @@ import json
 import patient_update as pu
 import time
 
+# lord forgive me for global variables 🙏
 client = OpenAI()
 
 configfile_name = 'config.json'
 patientsfile_name = 'patients.json'
 
-
-
 # get user goal file
 def get_json_file(filename):
-# opens patients json file and returns dictionary
+# opens specified json file and returns dictionary
     with open(filename, 'r') as file:
         user_data = json.load(file)
     return user_data
@@ -23,20 +22,20 @@ def get_json_file(filename):
 # access context from user file
 
 def get_user_data(user_id: int):
-# gets goal text from user data
+# gets data for single user based on user id
     patients = get_json_file(patientsfile_name)
     for user in patients:
         if user['patient_id'] == user_id:
             return user
 
-
-# start or find thread function
 def create_thread(user_id: int):
     '''
     Creates a thread for the given user on the current OpenAI Assistant
+    Used when a user does not have an active thread with an Assistant
     '''
     thread = client.beta.threads.create()
     
+    # save thread_id to user so further interactions use the correct thread
     pu.update_threadid(user_id, thread.id)
 
     return thread
@@ -45,15 +44,13 @@ def create_thread(user_id: int):
 def find_thread(user_id: int):
     '''
     Takes a user id parameter and finds the thread on this program's OpenAI Assistant for that user
-    If the user does not have a thread it creates one
+    If the user does not have a thread it calls the create thread function
     '''
     patients = get_json_file(patientsfile_name)
 
-    print(f"Getting thread from user file for user id: {user_id}")
-
     for user in patients:
         if user['patient_id'] == user_id:
-            print('found user')
+            # try to find thread for user, if no thread it creates one
             try:
                 thread_id = user['data']['openai_assistant']['thread_id']
                 thread = client.beta.threads.retrieve(thread_id)
@@ -125,10 +122,11 @@ def request_journal_entry(user_id: int):
 
 def analyze_entry(journal_entry, user_id):
     '''
-    Looks at most recent journal entry from patient
+    Looks at most recent journal entry from patient with a separate AI Assistant
     Creates summary with analysis for therapist
-    Uses completion API (for now) to get analysis of single entry
-    Shares analysis with therapist
+    Uses AI assistant with custom instruction to ask for analysis and goal update
+    Shares analysis with therapist and gives the option to update the therapy goal which is then saved in the patient file.
+    The updated therapy goal will then be used on further assistant/patient interactions
     '''
     # get openai assistant params specific to the therapist assistant
     assistant_id = get_json_file(configfile_name)['therapist_assistant_id']
@@ -169,7 +167,7 @@ def analyze_entry(journal_entry, user_id):
     print(assistant_prompt_text)
 
     # create new therapy goal if needed
-    make_new_goal = input(f"Would you like to update {name}'s therapy goal? Their current goal is {current_goal}? Y/n  ")
+    make_new_goal = input(f"Would you like to update {name}'s therapy goal? Their current goal is {current_goal}. Y/n  ")
     if make_new_goal.upper() == 'Y':
         new_therapy_goal = input("New therapy goal:  ")
         pu.update_goal(user_id, new_therapy_goal)
@@ -179,28 +177,18 @@ def analyze_entry(journal_entry, user_id):
 
     return
 
-def update_goal(goal):
-    '''
-    Ask therapist if goal should be updated
-    Suggests new goal first, asks if ok
-    Updates goal in patients.json
-    '''
-
 
 def main():
+    # get user who will be asked for a journal entry
     user_id = int(input("What is the User ID? "))
-    # start new or find thread
-
-    # generate reminder prompt from thread
+    
+    # get journal entry for user from context (lots of other stuff happens here too)
     journal_entry = request_journal_entry(user_id)
-    # store response
+    
+    # store response securely (TODO)
 
-    # analyze resonpse
-        # create assistant to summarize the journal entry and output a response for the therapist to analyze.
+    # analyze resonpse with separate AI Assistant and suggest an updated goal (and other stuff)
     analyze_entry(journal_entry, user_id)
-
-    # Suggest and ask therapist to update context
-    # update context
 
     return
 
