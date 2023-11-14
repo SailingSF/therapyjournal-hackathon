@@ -1,1 +1,4 @@
 .env
+therapyjournal
+__pycache__
+*venv*
