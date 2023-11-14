@@ -30,14 +30,22 @@ logging.basicConfig(
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text="I am journal bot. \
+    text = (
+        "I am journal bot. \
 Write down your journal entries here.\n\n \
 \
 You can set a personal goal by using the /setgoal command. \n \
 Once you wrote something, you can use the /reflect command to get an analysis of your comments.\n\n\
 You can see your current goal by using the /goal command, and general info by using the /info command.",
+    )
+
+    keyboard = [
+        [telegram.KeyboardButton("/setgoal time-management")],
+        [telegram.KeyboardButton("/setgoal work-life balance")],
+    ]
+    keyboard_markup = telegram.ReplyKeyboardMarkup(keyboard)
+    await context.bot.send_message(
+        chat_id=update.message.chat_id, text=text, reply_markup=keyboard_markup
     )
 
 
