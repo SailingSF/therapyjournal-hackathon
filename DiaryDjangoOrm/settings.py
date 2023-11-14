@@ -77,7 +77,7 @@ WSGI_APPLICATION = "DiaryDjangoOrm.wsgi.application"
 
 import dsnparse
 
-db_info = dsnparse.parse(env("DATABASE"))
+db_info = dsnparse.parse(env("DATABASE_URL"))
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
