@@ -1,9 +1,9 @@
 from asgiref.sync import sync_to_async
-import asyncio
 import logging
 from os import getenv
 import io
 from telegram import Update
+import telegram
 from telegram.ext import (
     filters,
     MessageHandler,
@@ -20,10 +20,8 @@ from lib.threads import get_or_create_thread
 from lib.therapist import analyze_journal
 from lib.open_ai_tools import get_open_ai_client
 from lib.utils import remove_command_string
+from lib.env import env
 
-load_dotenv()
-
-TELEGRAM_BOT_TOKEN = getenv("TELEGRAM_BOT_TOKEN")
 MIN_MESSAGE_LENGTH_FOR_REFLECTION = 200
 
 logging.basicConfig(
@@ -64,29 +62,12 @@ async def set_goal(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def new_entry(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = await get_user(update)
-    print(user)
     message = await sync_to_async(user.messages.create)(
         user=user,
         text=update.message.text,
         author="User",
         telegram_message_id=update.message.message_id,
         source="TelegramText",
-    )
-    print(message)
-
-
-async def send_reminder(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = await get_user(update)
-    thread = await get_or_create_thread(user)
-    reminder_message = await get_reminder_message(user, thread)
-    telegram_message = await context.bot.send_message(
-        chat_id=update.effective_chat.id, text=reminder_message
-    )
-
-    await sync_to_async(user.messages.create)(
-        text=reminder_message,
-        author="JournalBot",
-        telegram_message_id=telegram_message.message_id,
     )
 
 
@@ -99,12 +80,16 @@ async def reflect(update: Update, context: ContextTypes.DEFAULT_TYPE):
     #     book = await author.books.afirst()
 
     if len(combined) < MIN_MESSAGE_LENGTH_FOR_REFLECTION:
-        print("Not enough unprocessed messages")
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=f"Analysis will be more helpful if you write at last {MIN_MESSAGE_LENGTH_FOR_REFLECTION - len(combined)} more characters before reflecting.",
         )
     else:
+        await context.bot.send_chat_action(
+            chat_id=update.effective_chat.id,
+            action=telegram.constants.ChatAction.TYPING,
+        )
+
         # Obtain analysis
         analysis = analyze_journal(user, combined)
 
@@ -119,7 +104,6 @@ async def reflect(update: Update, context: ContextTypes.DEFAULT_TYPE):
             author="TherapistBot",
             telegram_message_id=telegram_message.message_id,
         )
-        print(4)
         # Mark existing messages as processed
         await sync_to_async(user.messages.filter(author="User").update)(processed=True)
 
@@ -170,16 +154,13 @@ async def transcribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def serve_bot():
-    application = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+    application = ApplicationBuilder().token(env("TELEGRAM_BOT_TOKEN")).build()
 
     start_handler = CommandHandler("start", start)
     application.add_handler(start_handler)
 
     set_goal_handler = CommandHandler("setgoal", set_goal)
     application.add_handler(set_goal_handler)
-
-    send_reminder_handler = CommandHandler("remind", send_reminder)
-    application.add_handler(send_reminder_handler)
 
     get_goal_handler = CommandHandler("goal", get_goal)
     application.add_handler(get_goal_handler)
