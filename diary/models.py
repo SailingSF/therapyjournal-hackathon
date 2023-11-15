@@ -3,7 +3,7 @@ from django.db import models
 
 
 class User(models.Model):
-    chat_id = models.IntegerField(unique=True)
+    chat_id = models.BigIntegerField(unique=True)
     first_name = models.CharField(max_length=100)
     thread_id = models.CharField(max_length=50)
     goal = models.CharField(max_length=20000, null=True)

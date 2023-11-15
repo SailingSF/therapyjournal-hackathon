@@ -25,7 +25,7 @@ from lib.env import env
 MIN_MESSAGE_LENGTH_FOR_REFLECTION = 200
 
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.DEBUG
 )
 
 
@@ -51,11 +51,9 @@ You can see your current goal by using the /goal command, and general info by us
 
 async def get_user(update):
     chat_id = update.effective_chat.id
-    # try:
-    user = await sync_to_async(User.objects.get_or_create)(
+    user = await sync_to_async(User.objects.get)(
         chat_id=chat_id, first_name=update.effective_user.first_name
     )
-
     return user[0]
 
 
@@ -134,7 +132,7 @@ async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=f"You have {unprocessed_count}/{message_count} unprocessed journal entries.",
+        text=f"You have {unprocessed_count} / {message_count} unprocessed journal entries.",
     )
 
 
