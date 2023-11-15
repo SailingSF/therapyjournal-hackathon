@@ -51,10 +51,13 @@ You can see your current goal by using the /goal command, and general info by us
 
 async def get_user(update):
     chat_id = update.effective_chat.id
-    user = await sync_to_async(User.objects.get)(
-        chat_id=chat_id, first_name=update.effective_user.first_name
-    )
-    return user[0]
+    try:
+        user = await sync_to_async(User.objects.get)(chat_id=chat_id)
+    except:
+        user = await sync_to_async(User.objects.create)(
+            chat_id=chat_id, first_name=update.effective_user.first_name
+        )
+    return user
 
 
 async def set_goal(update: Update, context: ContextTypes.DEFAULT_TYPE):
