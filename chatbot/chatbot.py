@@ -12,6 +12,7 @@ from telegram.ext import (
     CommandHandler,
     ContextTypes,
 )
+from chatbot.week_in_review import send_week_in_review
 
 import db
 from diary.models import User
@@ -187,6 +188,13 @@ async def set_challenges(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+async def send_week_in_review_wrapper(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+):
+    user = await get_user(update)
+    await send_week_in_review(user, context.bot)
+
+
 def serve_bot():
     application = ApplicationBuilder().token(env("TELEGRAM_BOT_TOKEN")).build()
 
@@ -205,11 +213,10 @@ def serve_bot():
     set_reflect_handler = CommandHandler("reflect", reflect)
     application.add_handler(set_reflect_handler)
 
-    # set_summarize_handler = CommandHandler("summarize", summarize)
-    # application.add_handler(set_summarize_handler)
-
-    set_challenges_handler = CommandHandler("set_challenges", summarize)
-    application.add_handler(set_challenges_handler)
+    set_summarize_handler = CommandHandler(
+        "week_in_review", send_week_in_review_wrapper
+    )
+    application.add_handler(set_summarize_handler)
 
     message_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), new_entry)
     application.add_handler(message_handler)

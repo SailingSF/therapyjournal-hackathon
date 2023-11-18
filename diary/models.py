@@ -7,6 +7,7 @@ class User(models.Model):
     first_name = models.CharField(max_length=100)
     thread_id = models.CharField(max_length=50)
     goal = models.CharField(max_length=20000, null=True)
+    enable_week_in_review = models.BooleanField(default=False)
 
 
 class Message(models.Model):
@@ -28,7 +29,7 @@ class Message(models.Model):
         default=AuthorType.USER,
     )
     processed = models.BooleanField(default=False)
-    telegram_message_id = models.BigIntegerField()
+    telegram_message_id = models.BigIntegerField(null=True)
     source = models.CharField(
         max_length=15,
         choices=SourceType.choices,
