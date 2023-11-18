@@ -24,12 +24,13 @@ async def send_reminder(user, bot):
 
 
 async def send_reminders():
-    application = ApplicationBuilder().token(env("TELEGRAM_BOT_TOKEN")).build()
-    async for user in User.objects.all():
-        last_message = await sync_to_async(
-            user.messages.filter(author="User").order_by("-created_date").first
-        )()
-        time_ago = datetime.now() - last_message.created_date.replace(tzinfo=None)
-        print(f"Time ago for {user.first_name} is {time_ago}")
-        if time_ago.days >= 1:
-            await send_reminder(user, application.bot)
+    if datetime.now().weekday() != 4:
+        application = ApplicationBuilder().token(env("TELEGRAM_BOT_TOKEN")).build()
+        async for user in User.objects.all():
+            last_message = await sync_to_async(
+                user.messages.filter(author="User").order_by("-created_date").first
+            )()
+            time_ago = datetime.now() - last_message.created_date.replace(tzinfo=None)
+            print(f"Time ago for {user.first_name} is {time_ago}")
+            if time_ago.days >= 1:
+                await send_reminder(user, application.bot)
