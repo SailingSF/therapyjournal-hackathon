@@ -4,6 +4,7 @@ from os import getenv
 import io
 from telegram import Update
 import telegram
+import datetime
 from telegram.ext import (
     filters,
     MessageHandler,
@@ -11,11 +12,10 @@ from telegram.ext import (
     CommandHandler,
     ContextTypes,
 )
-from dotenv import load_dotenv
 
 import db
 from diary.models import User
-from lib.assistant import get_reminder_message
+from lib.assistant import get_reminder_message, suggest_improvements, summarize_week
 from lib.threads import get_or_create_thread
 from lib.therapist import analyze_journal
 from lib.open_ai_tools import get_open_ai_client
@@ -30,22 +30,20 @@ logging.basicConfig(
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = (
-        "I am journal bot. \
+    text = "I am journal bot. \
 Write down your journal entries here.\n\n \
 \
 You can set a personal goal by using the /setgoal command. \n \
 Once you wrote something, you can use the /reflect command to get an analysis of your comments.\n\n\
-You can see your current goal by using the /goal command, and general info by using the /info command.",
-    )
+You can see your current goal by using the /goal command, and general info by using the /info command."
 
-    keyboard = [
-        [telegram.KeyboardButton("/setgoal time-management")],
-        [telegram.KeyboardButton("/setgoal work-life balance")],
-    ]
-    keyboard_markup = telegram.ReplyKeyboardMarkup(keyboard)
+    # keyboard = [
+    #     [telegram.KeyboardButton("/setgoal time-management")],
+    #     [telegram.KeyboardButton("/setgoal work-life balance")],
+    # ]
+    # keyboard_markup = telegram.ReplyKeyboardMarkup(keyboard)
     await context.bot.send_message(
-        chat_id=update.message.chat_id, text=text, reply_markup=keyboard_markup
+        chat_id=update.message.chat_id, text=text  # , reply_markup=keyboard_markup
     )
 
 
@@ -162,6 +160,33 @@ async def transcribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+async def set_challenges(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = await get_user(update)
+
+    challenges = remove_command_string(update.message.text)
+
+    messages_last_week = user.messages.filter(
+        created_date__gte=datetime.datetime.now() - datetime.timedelta(weeks=1),
+        author="User",
+    )
+
+    combined = ""
+    async for message in messages_last_week:
+        combined += message.text + "\n\n"
+
+    improvements = await suggest_improvements(user, challenges, combined)
+
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=improvements,
+    )
+
+    message = await sync_to_async(user.messages.create)(
+        text=improvements,
+        author="RetroBot",
+    )
+
+
 def serve_bot():
     application = ApplicationBuilder().token(env("TELEGRAM_BOT_TOKEN")).build()
 
@@ -179,6 +204,12 @@ def serve_bot():
 
     set_reflect_handler = CommandHandler("reflect", reflect)
     application.add_handler(set_reflect_handler)
+
+    # set_summarize_handler = CommandHandler("summarize", summarize)
+    # application.add_handler(set_summarize_handler)
+
+    set_challenges_handler = CommandHandler("set_challenges", summarize)
+    application.add_handler(set_challenges_handler)
 
     message_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), new_entry)
     application.add_handler(message_handler)
