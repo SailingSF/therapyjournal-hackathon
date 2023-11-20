@@ -83,7 +83,9 @@ def oai_required_action(calls):
     
     return results
 
-
+# get last message
+def get_message_text(thread_id: str, index: int = 0):
+    # gets the message at index for a thread (default last message)
+    messages = client.beta.threads.messages.list(thread_id=thread_id)
     
-
-# run based on status
+    return messages.data[index].content[0].text.value
