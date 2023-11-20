@@ -1,5 +1,7 @@
 from openai import OpenAI
 import time
+import json
+import function_tools as func_t
 
 client = OpenAI()
 
@@ -43,9 +45,45 @@ def runstatus_handle(run_id: str, thread_id: str, assistant_id: str):
     while run.status != 'completed':
         if run.status == 'requires_action':
             # find the function and do it
-            pass
+            results = oai_required_action(run.required_action.submit_tool_outputs.tool_calls)
+            # submit results
+            run = client.beta.threads.runs.submit_tool_outputs(
+                thread_id=thread_id,
+                run_id=run.id,
+                tool_outputs=results
+                )
         else:
+            #print current status and wait to try again
+            print(f"Current status of run: {run.status}")
             time.sleep(1)
 
     return
+
+# required action function
+def oai_required_action(calls):
+    '''
+    When 'Require_action' status is given from run, this function handles the calling
+    of outside functions to supply data back to the assistant
+    calls: openai type of run.required_action.submit_tool_outputs.tool_calls
+    returns the 'call_id' and output for each call
+    '''
+    # map for enabled tools in assistant
+    tool_functions = {'current_time': {'function': func_t.current_time, 'params': ['timezone']}}
+
+    results = []
+    # for each required call in the required_action object
+    # call the right function with the right arguments
+    for call in calls:
+        # get required function
+        func = tool_functions[call.function.name]['function']
+        # get params for the function
+        arguments = json.loads(call.function.arguments)
+        response = func(**arguments)
+        results.append({'tool_call_id': call.id, 'output': response})
+    
+    return results
+
+
+    
+
 # run based on status
