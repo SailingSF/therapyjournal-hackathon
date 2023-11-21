@@ -4,6 +4,7 @@ import os
 import requests
 import json
 import patient_update as pu
+import ai_assistants as assistant
 import time
 
 # lord forgive me for global variables 🙏
@@ -62,10 +63,6 @@ def find_thread(user_id: int):
 
     return thread
 
-def run_chat(thread_id, instructions):
-    '''
-    Runs specific thread with assistant and instructions
-    '''
 
 def request_journal_entry(user_id: int):
     '''
@@ -79,44 +76,21 @@ def request_journal_entry(user_id: int):
     user = get_user_data(user_id)
     user_goal = user['data']['contextual_information']['therapy_goals']
     name = user['data']['name']
-    general_instructions = get_json_file(configfile_name)['journal_assistant_instructions']
-    specific_instructions = general_instructions.format(name=name, goal=user_goal)
+    file = get_json_file(configfile_name)
+    reminder_instructions = file['reminder_instructions'].format(name=name, goal=user_goal)
+    journal_assistant_id = file['journal_assistant_id']
 
-
-    # run initial chat
-        # journal reminder prompt
-    message = client.beta.threads.messages.create(
-        thread_id=thread.id,
-        role="user",
-        content="Remind me to write a journal entry and why right now is a good time."
-    )
-
-    journal_assistant_id = get_json_file(configfile_name)['journal_assistant_id']
-
-    run = client.beta.threads.runs.create(
-    thread_id=thread.id,
-    assistant_id=journal_assistant_id,
-    instructions=specific_instructions
-    )
-    while run.status != 'completed':
-        print(run)
-        run = client.beta.threads.runs.retrieve(thread_id=thread.id,run_id=run.id)
-        time.sleep(2)
-
+    # run chat with instructions to prompt
+    run = assistant.run_thread(reminder_instructions, thread.id, journal_assistant_id)
+    run = assistant.runstatus_handle(run.id, thread.id, journal_assistant_id)
 
     # print message to prompt journal entry
-    messages = client.beta.threads.messages.list(thread_id=thread.id)
-    assistant_prompt_text = messages.data[0].content[0].text.value
+    assistant_prompt_text = assistant.get_message_text(thread.id, 0)
     print(assistant_prompt_text)
 
     journal_entry = input("Input: ")
 
-    # add journal to thread
-    message = client.beta.threads.messages.create(
-        thread_id=thread.id,
-        role="user",
-        content=journal_entry
-    )
+    assistant.add_message(journal_entry, thread.id, journal_assistant_id)
 
     return journal_entry
 

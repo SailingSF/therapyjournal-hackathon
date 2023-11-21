@@ -33,7 +33,7 @@ def run_thread(instructions: str, thread_id: str, assistant_id: str):
         assistant_id=assistant_id,
         instructions=instructions
     )
-    return run.id
+    return run
 
 # wait for status
 def runstatus_handle(run_id: str, thread_id: str, assistant_id: str):
@@ -56,8 +56,9 @@ def runstatus_handle(run_id: str, thread_id: str, assistant_id: str):
             #print current status and wait to try again
             print(f"Current status of run: {run.status}")
             time.sleep(1)
+            run = client.beta.threads.runs.retrieve(thread_id=thread_id,run_id=run_id)
 
-    return
+    return run
 
 # required action function
 def oai_required_action(calls):
