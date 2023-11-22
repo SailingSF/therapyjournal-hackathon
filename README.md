@@ -16,6 +16,20 @@ The therapist can then update the user's therapy goals so that the next journali
 
 All code is python and interface is the terminal.
 
+### Setup
+
+The therapy journal relies on having OpenAI 'Assistants' to prompt a user and store their journal context. The setup to create these assistantants is shown in the Jupyter Notebook 'assistant_creation.' Assistants can also be created in the [OpenAI Platform UI](https://platform.openai.com/assistants). Once assistants are created, the Assistant_id will need to be saved in the config.json file so that the code is looking at your assistants.
+
+Your OpenAI API key will need to be in the .env file, a sample is given here.
+
+The code takes care of creating new threads for users but those are stored in the patients.json file once created.
+
+The python packages used are all in the requirements.txt file.
+
+### Running Locally
+
+As an example and a demo you can run the agent interaction locally without the telegram bot to see how the assistants work and how the interaction between a patient/user and the assistant as well as how a professional therapist can use the system.
+
 To add a new patient run `python create_patient` which will prompt for the required fields to create a new patient.
 
 To run the program for a specific patient run `python assistant_test.py`. Follow the prompt to enter the `user_id` of the patient you want the assistant to prompt for a journal entry. The program finds if the user has a thread with the journaling assistant and creates one if they don't.
@@ -35,7 +49,5 @@ The config.json file has the relevant Assistant and thread IDs for this program 
 
 ## Future work
 
-With the release of GPTs this morning (11/9/23) a lot of this behaviour can be replicated and utilize the chatGPT interface. I built this by experimenting for an hour and hope to improve it and include the multiple roles features of patients and a therapist. <https://chat.openai.com/g/g-dPWBwvrUV-reflection-companion>
-
-A frontend will be important to make this more useful as well as a more secure way to handle data than local json files.
+A frontend will be important to make this more useful as well as a more secure way to handle data than local json files. This can be accomplished in a number of ways and we currently have a telegram bot to accomplish this.
 An interface for therapists to analyze all of a patient's journal entries would be great too. Storing the posts both in a traditional database as well as a vector database so that RAG could be done by the AI assistant for the therapist would be a great way to summarize and notice trends through time as well as identify recurring themes.
