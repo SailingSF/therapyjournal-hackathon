@@ -55,50 +55,5 @@
                 "thread_id": "thread_EmCFPT51U50pHbbxyMr9rV9Q"
             }
         }
-    },
-    {
-        "patient_id": 5,
-        "data": {
-            "name": "Max A",
-            "age": 29,
-            "created_at": "2023-11-09T17:06:49.133389",
-            "journal_entries": [],
-            "contextual_information": {
-                "therapy_goals": "Avoidance issues"
-            },
-            "openai_assistant": {
-                "thread_id": "thread_IkzsCyNiPLnQcxVmqj4XgF1K"
-            }
-        }
-    },
-    {
-        "patient_id": 6,
-        "data": {
-            "name": "Sasha",
-            "age": 25,
-            "created_at": "2023-11-09T17:57:06.840411",
-            "journal_entries": [],
-            "contextual_information": {
-                "therapy_goals": "Family issues"
-            },
-            "openai_assistant": {
-                "thread_id": "thread_eqVCrICIPOchm5Vr40E9IIO5"
-            }
-        }
-    },
-    {
-        "patient_id": 7,
-        "data": {
-            "name": "Rickster",
-            "age": 28,
-            "created_at": "2023-11-21T12:26:34.332844",
-            "journal_entries": [],
-            "contextual_information": {
-                "therapy_goals": "Stay warm and cozy and away from deer."
-            },
-            "openai_assistant": {
-                "thread_id": "thread_6ynwVOBaJLHbgbziXrO38vXY"
-            }
-        }
     }
 ]
