@@ -35,15 +35,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = "I am journal bot. \
 Write down your journal entries here.\n\n \
 \
-You can set a personal goal by using the /setgoal command. \n \
+You can set a personal goal by using the /setgoal [goal] command. \n \
 Once you wrote something, you can use the /reflect command to get an analysis of your comments.\n\n\
-You can see your current goal by using the /goal command, and general info by using the /info command."
+You can see your current goal by using the /goal command, and general info by using the /info command.\n\n\
+To turn on daily reminders, use /reminders on\n\n\
+To turn on weekly summaries of your entries, use /weekly_review on\n\n\
+"
 
-    # keyboard = [
-    #     [telegram.KeyboardButton("/setgoal time-management")],
-    #     [telegram.KeyboardButton("/setgoal work-life balance")],
-    # ]
-    # keyboard_markup = telegram.ReplyKeyboardMarkup(keyboard)
     await context.bot.send_message(
         chat_id=update.message.chat_id, text=text  # , reply_markup=keyboard_markup
     )
@@ -85,8 +83,6 @@ async def reflect(update: Update, context: ContextTypes.DEFAULT_TYPE):
     combined = ""
     async for message in user.messages.filter(author="User", processed=False):
         combined += message.text + "\n\n"
-    # async for author in Author.objects.filter(name__startswith="A"):
-    #     book = await author.books.afirst()
 
     if len(combined) < MIN_MESSAGE_LENGTH_FOR_REFLECTION:
         await context.bot.send_message(
@@ -143,7 +139,7 @@ async def transcribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = await get_user(update)
     audio_file = await context.bot.get_file(update.message.voice.file_id)
     buffer = io.BytesIO()
-    buffer.name = "audiofile.ogg"
+    buffer.name = "InMemory.ogg"
     await audio_file.download_to_memory(buffer)
     open_ai_client = get_open_ai_client()
     transcript = open_ai_client.audio.transcriptions.create(
@@ -154,7 +150,7 @@ async def transcribe(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text=f"Transcription: {transcript.text}",
     )
 
-    message = await sync_to_async(user.messages.create)(
+    await sync_to_async(user.messages.create)(
         text=transcript.text,
         author="User",
         telegram_message_id=update.message.message_id,
