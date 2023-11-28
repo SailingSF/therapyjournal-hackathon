@@ -22,6 +22,7 @@ from lib.therapist import analyze_journal
 from lib.open_ai_tools import get_open_ai_client
 from lib.utils import remove_command_string
 from lib.env import env
+from lib.telegram_tools import telegram_message
 
 MIN_MESSAGE_LENGTH_FOR_REFLECTION = 200
 
@@ -195,35 +196,51 @@ async def send_week_in_review_wrapper(
     await send_week_in_review(user, context.bot)
 
 
+async def reminders_switch(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = await get_user(update)
+    command = remove_command_string(update.message.text)
+    reminders_on = command == "on"
+    user.enable_reminders = reminders_on
+    await sync_to_async(user.save)()
+    await telegram_message(
+        user, context, f"Reminders switched {'on' if reminders_on else 'off'}"
+    )
+
+
+async def weekly_review_switch(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = await get_user(update)
+    command = remove_command_string(update.message.text)
+    weekly_review_on = command == "on"
+    user.enable_week_in_review = weekly_review_on
+    await sync_to_async(user.save)()
+    await telegram_message(
+        user, context, f"Weekly review switched {'on' if weekly_review_on else 'off'}"
+    )
+
+
 def serve_bot():
     application = ApplicationBuilder().token(env("TELEGRAM_BOT_TOKEN")).build()
 
-    start_handler = CommandHandler("start", start)
-    application.add_handler(start_handler)
-
-    set_goal_handler = CommandHandler("setgoal", set_goal)
-    application.add_handler(set_goal_handler)
-
-    get_goal_handler = CommandHandler("goal", get_goal)
-    application.add_handler(get_goal_handler)
-
-    get_info_handler = CommandHandler("info", get_info)
-    application.add_handler(get_info_handler)
-
-    set_reflect_handler = CommandHandler("reflect", reflect)
-    application.add_handler(set_reflect_handler)
-
-    set_summarize_handler = CommandHandler(
-        "week_in_review", send_week_in_review_wrapper
+    # Command handlers
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("setgoal", set_goal))
+    application.add_handler(CommandHandler("goal", get_goal))
+    application.add_handler(CommandHandler("info", get_info))
+    application.add_handler(CommandHandler("reflect", reflect))
+    application.add_handler(
+        CommandHandler("week_in_review", send_week_in_review_wrapper)
     )
-    application.add_handler(set_summarize_handler)
+    application.add_handler(CommandHandler("reminders", reminders_switch))
+    application.add_handler(CommandHandler("weekly_review", weekly_review_switch))
 
-    message_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), new_entry)
-    application.add_handler(message_handler)
-
-    transcription_handler = MessageHandler(
-        filters.VOICE & (~filters.COMMAND), transcribe
+    # Regular message handler
+    application.add_handler(
+        MessageHandler(filters.TEXT & (~filters.COMMAND), new_entry)
     )
-    application.add_handler(transcription_handler)
+
+    # Non-text handlers
+    application.add_handler(
+        MessageHandler(filters.VOICE & (~filters.COMMAND), transcribe)
+    )
 
     application.run_polling()
