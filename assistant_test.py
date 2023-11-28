@@ -82,7 +82,7 @@ def add_journal_header(entry: str) -> str:
 
 def request_journal_entry(user_id: int):
     '''
-    Logic to ask the patient for a journal entry
+    Logic to ask the patient for a journal entry and submit it in the thread
     '''
     user = get_user_data(user_id)
     # get thread
@@ -106,6 +106,8 @@ def request_journal_entry(user_id: int):
 
     journal_entry = input("Input: ")
 
+    journal_entry = add_journal_header(journal_entry)
+
     assistant.add_message(journal_entry, thread.id, journal_assistant_id)
 
     return journal_entry
@@ -128,10 +130,10 @@ def analyze_entry(journal_entry, user_id):
     name = user['data']['name']
 
     # add message to analyze the given journal entry
-    message = client.beta.threads.messages.create(
+    client.beta.threads.messages.create(
         thread_id=thread_id,
         role="user",
-        content=f"Analyze the following journal entry written by a patient: {journal_entry}"
+        content=f"Analyze the following journal entry written by a patient: \n{journal_entry}"
     )
 
     # get the instructions for the therapy assistant
@@ -146,7 +148,7 @@ def analyze_entry(journal_entry, user_id):
 
     # wait for run to complete
     while run.status != 'completed':
-        print(run)
+        print(run.status)
         run = client.beta.threads.runs.retrieve(thread_id=thread_id,run_id=run.id)
         time.sleep(2)
 
