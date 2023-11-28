@@ -27,7 +27,7 @@ async def send_week_in_review(user, bot):
 
 
 async def send_week_in_review_to_all():
-    if datetime.now().weekday() == 4:
+    if datetime.now().weekday() == 5:
         application = ApplicationBuilder().token(env("TELEGRAM_BOT_TOKEN")).build()
         async for user in User.objects.filter(enable_week_in_review=True).all():
             await send_week_in_review(user, application.bot)

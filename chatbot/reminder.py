@@ -24,7 +24,7 @@ async def send_reminder(user, bot):
 
 
 async def send_reminders():
-    if datetime.now().weekday() != 4:
+    if datetime.now().weekday() != 5:
         application = ApplicationBuilder().token(env("TELEGRAM_BOT_TOKEN")).build()
         async for user in User.objects.filter(enable_reminders=True).all():
             last_message = await sync_to_async(
