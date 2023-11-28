@@ -14,6 +14,30 @@ client = OpenAI()
 configfile_name = 'config.json'
 patientsfile_name = 'patients.json'
 
+# create user object
+class User():
+    def __init__(self, id_no) -> None:
+        self.id = id_no
+        self.name = None
+        self.age = None
+        self.therapy_goal = None
+        self.thread_id = None
+        self.load_data()
+
+    def load_data(self):
+        user = get_user_data(self.id)
+        self.name = user['data']['name']
+        self.age = user['data']['age']
+        self.therapy_goal = user['data']['contextual_information']['therapy_goals']
+        try:
+            self.thread_id = user['data']['openai_assistant']['thread_id']
+        except:
+            self.thread_id = create_thread(self.id).id         
+
+    def __str__(self) -> str:
+        return f"User {self.id}: Name = {self.name}, Age {self.age}, Goal = {self.therapy_goal}"
+
+
 # get user goal file
 def get_json_file(filename):
 # opens specified json file and returns dictionary
@@ -89,7 +113,6 @@ def request_journal_entry(user_id: int):
     thread = find_thread(user_id)
 
     # set instruction based on goal
-    user = get_user_data(user_id)
     user_goal = user['data']['contextual_information']['therapy_goals']
     name = user['data']['name']
     file = get_json_file(configfile_name)
