@@ -1,3 +1,4 @@
+from datetime import datetime
 import re
 from openai import OpenAI
 import os
@@ -62,6 +63,21 @@ def find_thread(user_id: int):
                 print(f"New thread created with id: {thread.id}")
 
     return thread
+
+def add_journal_header(entry: str) -> str:
+    '''
+    Takes the text of a user generated journal entry and adds a timestamp
+    as well as a header to signify that this message in the assistant thread
+    is a journal entry
+
+    Returns string of journal entry
+    '''
+    form = "%A %B %d, %Y at %H:%M"
+    current_time = datetime.now().strftime(form)
+
+    formatted_entry = f"Journal entry at {current_time}: \n\n {entry}"
+    
+    return formatted_entry
 
 
 def request_journal_entry(user_id: int):

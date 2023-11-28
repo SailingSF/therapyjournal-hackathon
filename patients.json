@@ -100,5 +100,20 @@
                 "thread_id": "thread_6ynwVOBaJLHbgbziXrO38vXY"
             }
         }
+    },
+    {
+        "patient_id": 8,
+        "data": {
+            "name": "Charles",
+            "age": 29,
+            "created_at": "2023-11-28T10:23:09.175359",
+            "journal_entries": [],
+            "contextual_information": {
+                "therapy_goals": "Address anxiety and imaginary pets."
+            },
+            "openai_assistant": {
+                "thread_id": "thread_AqxEzkbySyMQyFIHdEi8HRK9"
+            }
+        }
     }
 ]

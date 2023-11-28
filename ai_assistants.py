@@ -26,7 +26,7 @@ def add_message(message: str, thread_id: str, assistant_id: str):
 # run thread with instructions
 def run_thread(instructions: str, thread_id: str, assistant_id: str):
     '''
-    Run thread with instructions, returns the run id
+    Run thread with instructions, returns the run object
     '''
     run = client.beta.threads.runs.create(
         thread_id=thread_id,
