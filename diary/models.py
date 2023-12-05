@@ -8,6 +8,7 @@ class User(models.Model):
     thread_id = models.CharField(max_length=50)
     goal = models.CharField(max_length=20000, null=True)
     enable_week_in_review = models.BooleanField(default=False)
+    enable_reminders = models.BooleanField(default=False)
 
 
 class Message(models.Model):
