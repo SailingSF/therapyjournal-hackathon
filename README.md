@@ -87,13 +87,18 @@ The repository is pre-configured to run for production on heroku. In order to ru
 3. In Settings -> Config Vars configure the environment variables from your local `.env` file.
 4. install the [heroku cli](https://devcenter.heroku.com/articles/heroku-cli) and follow the setup steps.
 5. Under Deploy -> Deployment method select `Heroku Git` and add the remote to your local repo via
+6. Disable the django static file collection, as heroku does not support this feature and will fail otherwise
+
+```
+$ heroku config:set DISABLE_COLLECTSTATIC=1
+```
 
 ```
 git remote add heroku [heroku git url]
 ```
 
-6. Push the repo to heroku `git posh heroku main`
-7. Activate the workers
+7. Push the repo to heroku `git posh heroku main`
+8. Activate the workers
 
 ```
 scripts/workers_on
