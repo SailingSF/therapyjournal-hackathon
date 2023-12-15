@@ -23,6 +23,12 @@ from lib.open_ai_tools import get_open_ai_client
 from lib.utils import remove_command_string
 from lib.env import env
 from lib.telegram_tools import telegram_message
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn=env("SENTRY_DSN"),
+    enable_tracing=True,
+)
 
 MIN_MESSAGE_LENGTH_FOR_REFLECTION = 200
 
