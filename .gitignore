@@ -4,3 +4,4 @@ __pycache__
 *venv*
 patients.json
 .ipynb_checkpoints
+.vscode
