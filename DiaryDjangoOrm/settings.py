@@ -67,8 +67,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "DiaryDjangoOrm.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
