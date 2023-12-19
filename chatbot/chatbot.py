@@ -23,12 +23,19 @@ from lib.open_ai_tools import get_open_ai_client
 from lib.utils import remove_command_string
 from lib.env import env
 from lib.telegram_tools import telegram_message
+from lib.config import Config
 import sentry_sdk
 
 sentry_sdk.init(
     dsn=env("SENTRY_DSN"),
     enable_tracing=True,
 )
+
+from lib.config import Config
+
+config = Config.from_yaml("config.yaml")
+
+print("config is", config)
 
 MIN_MESSAGE_LENGTH_FOR_REFLECTION = 200
 
@@ -75,13 +82,22 @@ async def set_goal(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def new_entry(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = await get_user(update)
-    message = await sync_to_async(user.messages.create)(
+    text = update.message.text
+    await sync_to_async(user.messages.create)(
         user=user,
-        text=update.message.text,
+        text=text,
         author="User",
         telegram_message_id=update.message.message_id,
         source="TelegramText",
     )
+    if config.persist_message_to_thread:
+        thread = get_or_create_thread(user)
+        open_ai_client = get_open_ai_client()
+        open_ai_client.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content=text,
+        )
 
 
 async def reflect(update: Update, context: ContextTypes.DEFAULT_TYPE):
